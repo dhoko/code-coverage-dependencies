@@ -3,6 +3,8 @@
 var esprima = require('esprima');
 var estraverse = require('estraverse');
 var _ = require('lodash');
+var vfs = require('vinyl-fs');
+var mapS = require('map-stream');
 
 function parseOptions(opts) {
   var defaultOpts = {
@@ -66,6 +68,30 @@ function buildTree(node, map) {
 
 }
 
+var path = require('path');
+var crypto = require('crypto');
+function checksum(str, algorithm, encoding) {
+    return crypto
+        .createHash(algorithm || 'sha1')
+        .update(str, 'utf8')
+        .digest(encoding || 'hex')
+}
+function bindCheckSum(config) {
+  vfs
+    .src('./src/js/**/**/*.js')
+    .pipe(mapS(function (file, cb) {
+
+      var name = path.basename(file.path, '.json').split('.')[0];
+      if('index' !== name) {
+        (config[name] || {}).checksum = checksum(file.contents.toString());
+      }
+
+      cb(null, file);
+    }));
+
+  return config;
+}
+
 function isService(node) {
   return node.type === 'MemberExpression' && /factory|service|provider|filter|directive|config|value|run/.test(node.property.name);
 }
@@ -78,7 +104,9 @@ function isNgModuleDeclaration(node) {
   return node.type === 'CallExpression' && node.callee.name === 'angularModule' && node.arguments.length > 0 && node.arguments[0].value === 'ng';
 }
 
-module.exports = findDependencies;
+module.exports = {
+  load: findDependencies,
+  checksum: bindCheckSum
+};
 module.exports.isAngularModuleStatement = isAngularModuleStatement;
 module.exports.isNgModuleDeclaration = isNgModuleDeclaration;
-

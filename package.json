@@ -13,9 +13,12 @@
     "url": "git@github.com:dhoko/codeCoverageDependencies.git"
   },
   "dependencies": {
+    "crypto": "0.0.3",
     "esprima": "^1.2.2",
     "estraverse": "^1.5.1",
-    "lodash": "^3.0.1"
+    "lodash": "^3.0.1",
+    "map-stream": "0.0.6",
+    "vinyl-fs": "^1.0.0"
   },
   "devDependencies": {
     "gulp-mocha": "^0.4.1",
