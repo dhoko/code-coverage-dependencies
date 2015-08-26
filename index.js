@@ -4,6 +4,7 @@ var esprima = require('esprima');
 var estraverse = require('estraverse');
 var _ = require('lodash');
 var vfs = require('vinyl-fs');
+var glob = require('glob-to-vinyl');
 var mapS = require('map-stream');
 
 function parseOptions(opts) {
@@ -74,22 +75,27 @@ function checksum(str, algorithm, encoding) {
     return crypto
         .createHash(algorithm || 'sha1')
         .update(str, 'utf8')
-        .digest(encoding || 'hex')
+        .digest(encoding || 'hex');
 }
-function bindCheckSum(config) {
-  vfs
-    .src('./src/js/**/**/*.js')
-    .pipe(mapS(function (file, cb) {
 
-      var name = path.basename(file.path, '.json').split('.')[0];
-      if('index' !== name) {
-        (config[name] || {}).checksum = checksum(file.contents.toString());
-      }
+function bindCheckSum(config, cb) {
+  glob('./src/js/**/**/*.js', function (err, files) {
 
-      cb(null, file);
-    }));
+    if(err) {
+      throw err;
+    }
 
-  return config;
+    var name;
+    files
+      .forEach(function (file) {
+        name = path.basename(file.path, '.json').split('.')[0];
+        if('index' !== name) {
+          (config[name] || {}).checksum = checksum(file.contents.toString());
+        }
+      });
+
+    cb(config);
+  });
 }
 
 function isService(node) {
