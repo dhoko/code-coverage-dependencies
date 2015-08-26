@@ -63,7 +63,10 @@ function buildTree(node, map) {
           };
         });
 
-      map[service].dependencies = args;
+      map[service].dependencies = (args || [])
+        .filter(function (dep) {
+          return dep.name.charAt(0) !== '$';
+        });
     }
   }
 
@@ -94,8 +97,29 @@ function bindCheckSum(config, cb) {
         }
       });
 
-    cb(config);
+    cb(attachCheckSumPerDependency(config));
   });
+}
+
+function attachCheckSumPerDependency(data) {
+
+  Object
+    .keys(data)
+    .forEach(function (service) {
+
+      data[service].dependencies = data[service]
+        .dependencies
+        .map(function (req) {
+
+          if(req.name) {
+            req.checksum = (data[req.name] || {}).checksum;
+          }
+          return req;
+        });
+
+    });
+
+  return data;
 }
 
 function isService(node) {
