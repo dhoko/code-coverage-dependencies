@@ -91,9 +91,10 @@ function bindCheckSum(config, cb) {
     var name;
     files
       .forEach(function (file) {
-        name = path.basename(file.path, '.json').split('.')[0];
+        name = path.basename(file.relative, '.js');
         if('index' !== name) {
           (config[name] || {}).checksum = checksum(file.contents.toString());
+          (config[name] || {}).updateAt = file.stat.ctime;
         }
       });
 
@@ -113,6 +114,7 @@ function attachCheckSumPerDependency(data) {
 
           if(req.name) {
             req.checksum = (data[req.name] || {}).checksum;
+            req.updateAt = (data[req.name] || {}).updateAt;
           }
           return req;
         });
@@ -120,6 +122,15 @@ function attachCheckSumPerDependency(data) {
     });
 
   return data;
+}
+
+function findRecentFiles(deps) {
+  return Object
+    .keys(deps)
+    .filter(function (file) {
+      // Files update last days
+      return deps[file].updateAt >= new Date(Date.now()-3600*24*1000);
+    });
 }
 
 function isService(node) {
@@ -136,7 +147,8 @@ function isNgModuleDeclaration(node) {
 
 module.exports = {
   load: findDependencies,
-  checksum: bindCheckSum
+  checksum: bindCheckSum,
+  findRecentFiles: findRecentFiles
 };
 module.exports.isAngularModuleStatement = isAngularModuleStatement;
 module.exports.isNgModuleDeclaration = isNgModuleDeclaration;
