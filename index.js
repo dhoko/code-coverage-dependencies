@@ -1,28 +1,50 @@
 'use strict';
 
-var tree     = require('./lib/tree'),
-    utils    = require('./lib/utils'),
-    checksum = require('./lib/checksum');
+var tree      = require('./lib/tree'),
+    fileUtils = require('./lib/fileUtils'),
+    checksum  = require('./lib/checksum'),
+    cUtils    = require('./lib/utils'),
+    Promise   = require('bluebird');
 
-function CodeDependencies(opt) {
-  this.opt = opt;
+function CodeDependencies(cfg) {
+  this.src = cfg.src;
   this.deps = {};
+
+  if(!this.src) {
+    throw new Error('You must specify a source. src can be a glob or a buffer');
+  }
 }
 
-CodeDependencies.prototype.src = function(srcFiles) {
-  this.deps = tree(srcFiles, this.opt);
-  return this;
+
+/**
+ * Parse the source and build a map
+ * Resolve a tree of depenencies and return the last updated
+ * components with their dependencies
+ * @return {Promise} {latest: <Array>, tree: <Object>}
+ */
+CodeDependencies.prototype.get = function() {
+
+  var self = this;
+
+  return new Promise(function (resolve, reject) {
+    fileUtils
+      .buffer(self.src)
+      .then(function (src) {
+        self.deps = tree(src);
+        checksum(self.src, self.deps, function (data) {
+          resolve({
+            tree: data,
+            latest: cUtils.lastUpdated(data)
+          });
+        });
+      })
+      .catch(reject);
+  });
+
 };
-
-CodeDependencies.prototype.get = function(cb) {
-  return checksum(this.deps, cb || function() {});
-};
-
-
 
 module.exports = {
-  load: function(srcFiles, opt) {
-    return new CodeDependencies(opt).src(srcFiles);
-  },
-  findRecentFiles: utils.findRecentFiles
+  load: function(opt) {
+    return new CodeDependencies(opt);
+  }
 };

@@ -13,8 +13,9 @@
     "url": "git@github.com:dhoko/codeCoverageDependencies.git"
   },
   "dependencies": {
+    "bluebird": "^2.10.0",
     "crypto": "0.0.3",
-    "esprima": "^1.2.2",
+    "esprima": "^2.6.0",
     "estraverse": "^1.5.1",
     "glob-to-vinyl": "0.0.1",
     "lodash": "^3.0.1",
