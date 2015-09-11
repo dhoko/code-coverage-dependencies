@@ -9,37 +9,34 @@ Check if your code is up to date with your dependencies
 var fs = require('fs');
 var ngDeps = require('ng-dependencies');
 
-var deps = ngDeps.load(fs.readFileSync('./app/js/app.js'));
 
-
-ngDeps
-  .checksum(deps, function (data) {
-    // console.log(JSON.stringify(data, null, 2));
-
-
-    var updated = ngDeps.findRecentFiles(data);
-
-    var list = [];
-
-    updated
-      .forEach(function (componentName) {
-        Object
-          .keys(data)
-          .forEach(function (component) {
-            var contains = data[component]
-              .dependencies
-              .some(function (dep) {
-                return dep.name === componentName;
-              });
-
-            if(contains) {
-              list.push(data[component]);
-            }
-          });
-      });
-
-      console.log(JSON.stringify(list, null, 2));
-
+var deps = ngDeps
+  .load({
+    src: './src/js/**/**/*.js',
+    // src: fs.readFileSync('./app/js/app.js')
+  })
+  .get()
+  .then(function (data) {
+    console.log(JSON.stringify(data.tree, null, 2));
+    console.log(JSON.stringify(data.latest, null, 2));
   });
 
 ```
+
+## API
+
+### load(<object:config>)
+
+- src: a glob string or a buffer
+
+It creates a new instance for a report.
+
+#### Api instance
+
+##### `get()`
+
+It returns a promise.
+Promise success args: `{tree: <Object>, latest: <Array>}`
+
+- tree is the dependency tree for your app
+- latest is an array of last updated depenencies (<= 1 day)
