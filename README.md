@@ -7,7 +7,7 @@ Check if your code is up to date with your dependencies
 'use strict';
 
 var fs = require('fs');
-var ngDeps = require('ng-dependencies');
+var ngDeps = require('code-coverage-dependencies');
 
 
 var deps = ngDeps
