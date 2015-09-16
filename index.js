@@ -31,12 +31,15 @@ CodeDependencies.prototype.get = function() {
       .buffer(self.src)
       .then(function (src) {
         self.deps = tree(src);
+
         checksum(self.src, self.deps, function (data) {
           resolve({
             tree: data,
-            latest: cUtils.lastUpdated(data)
+            latest: cUtils.lastUpdatedFiles(data),
+            files: cUtils.filesToUpdate(data)
           });
         });
+
       })
       .catch(reject);
   });
