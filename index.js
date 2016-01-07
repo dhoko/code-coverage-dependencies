@@ -4,6 +4,7 @@ var tree      = require('./lib/tree'),
     fileUtils = require('./lib/fileUtils'),
     checksum  = require('./lib/checksum'),
     cUtils    = require('./lib/utils'),
+    render    = require('./lib/report'),
     Promise   = require('bluebird');
 
 function CodeDependencies(cfg) {
@@ -49,5 +50,6 @@ CodeDependencies.prototype.get = function() {
 module.exports = {
   load: function(opt) {
     return new CodeDependencies(opt);
-  }
+  },
+  render: render
 };

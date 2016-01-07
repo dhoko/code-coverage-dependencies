@@ -43,7 +43,9 @@ var deps = dependencies
     console.log(JSON.stringify(data.tree, null, 2));
     console.log(JSON.stringify(data.latest, null, 2));
     console.log(JSON.stringify(data.files, null, 2));
-  });
+    return data.files.toUpdate;
+  })
+  .then(ngDeps.render);
 
 ```
 
